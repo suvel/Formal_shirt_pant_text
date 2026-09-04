@@ -4,7 +4,11 @@
   var BASE_IMAGE_PATH = "assert/plain_white.png";
   var SHIRT_WIDTH = 480;
   var SHIRT_HEIGHT = 520;
-  var TARGET_TILE_MAX_DIM = 175;
+
+  var patternConfig = {
+    rotationDeg: 0,
+    repeatCount: 3
+  };
 
   var baseImage = null;
   var lightingCanvas = null;
@@ -12,8 +16,13 @@
   var outputCanvas = null;
   var outputCtx = null;
   var currentObjectUrl = null;
+  var currentTextureImg = null;
 
   var textureInput = null;
+  var rotationInput = null;
+  var rotationValueEl = null;
+  var repeatCountInput = null;
+  var repeatCountValueEl = null;
   var errorMessageEl = null;
   var downloadBtn = null;
 
@@ -86,7 +95,8 @@
   function compositeTexture(textureImg) {
     var naturalW = textureImg.naturalWidth || textureImg.width;
     var naturalH = textureImg.naturalHeight || textureImg.height;
-    var scale = TARGET_TILE_MAX_DIM / Math.max(naturalW, naturalH);
+    var tileTargetDim = SHIRT_WIDTH / patternConfig.repeatCount;
+    var scale = tileTargetDim / Math.max(naturalW, naturalH);
     var tileW = Math.max(1, Math.round(naturalW * scale));
     var tileH = Math.max(1, Math.round(naturalH * scale));
 
@@ -100,6 +110,7 @@
     tileCtx.drawImage(textureImg, 0, 0, tileW, tileH);
 
     var pattern = outputCtx.createPattern(tileCanvas, "repeat");
+    pattern.setTransform(new DOMMatrix().rotate(patternConfig.rotationDeg));
 
     outputCtx.globalCompositeOperation = "source-over";
     outputCtx.clearRect(0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
@@ -146,6 +157,7 @@
     img.onload = function () {
       try {
         clearError();
+        currentTextureImg = img;
         compositeTexture(img);
       } catch (err) {
         showError("Could not apply that texture: " + err.message);
@@ -156,6 +168,22 @@
       resetFileInput();
     };
     img.src = objectUrl;
+  }
+
+  function handlePatternConfigChange() {
+    patternConfig.rotationDeg = Number(rotationInput.value);
+    patternConfig.repeatCount = Number(repeatCountInput.value);
+    rotationValueEl.textContent = patternConfig.rotationDeg + "°";
+    repeatCountValueEl.textContent = patternConfig.repeatCount + "×";
+
+    if (currentTextureImg) {
+      try {
+        clearError();
+        compositeTexture(currentTextureImg);
+      } catch (err) {
+        showError("Could not apply that texture: " + err.message);
+      }
+    }
   }
 
   function handleDownload() {
@@ -177,12 +205,18 @@
 
   function init() {
     textureInput = document.getElementById("texture-input");
+    rotationInput = document.getElementById("rotation-input");
+    rotationValueEl = document.getElementById("rotation-value");
+    repeatCountInput = document.getElementById("repeat-count-input");
+    repeatCountValueEl = document.getElementById("repeat-count-value");
     errorMessageEl = document.getElementById("error-message");
     downloadBtn = document.getElementById("download-btn");
     outputCanvas = document.getElementById("preview-canvas");
     outputCtx = outputCanvas.getContext("2d");
 
     textureInput.addEventListener("change", handleFileChange);
+    rotationInput.addEventListener("input", handlePatternConfigChange);
+    repeatCountInput.addEventListener("input", handlePatternConfigChange);
     downloadBtn.addEventListener("click", handleDownload);
 
     loadBaseImageAndBuildLightingMap().catch(function (err) {

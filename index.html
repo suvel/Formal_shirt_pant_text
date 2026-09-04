@@ -14,6 +14,12 @@
     <div class="controls">
       <label for="texture-input">Texture image</label>
       <input type="file" id="texture-input" accept="image/*">
+
+      <label for="rotation-input">Pattern rotation (<span id="rotation-value">0°</span>)</label>
+      <input type="range" id="rotation-input" min="0" max="359" step="1" value="0">
+
+      <label for="repeat-count-input">Pattern repeats across shirt (<span id="repeat-count-value">3×</span>)</label>
+      <input type="range" id="repeat-count-input" min="1" max="10" step="1" value="3">
     </div>
 
     <p id="error-message" role="alert" hidden></p>

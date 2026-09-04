@@ -11,13 +11,13 @@
 
 ## Decisions made (with rationale)
 - **Platform**: static HTML/CSS/vanilla-JS page, Canvas 2D only. No build step, no npm install, no backend. Chosen because the project started completely empty and Node/npm were available but nothing else (no Pillow/OpenCV/ImageMagick), and a client-side canvas approach needed zero installs.
-- **Scope**: "Simple" v1 — upload → auto-tiled + auto-lit → live preview → download. No manual controls (blend-mode picker, scale/rotate sliders) yet; explicitly deferred.
+- **Scope**: "Simple" v1 — upload → auto-tiled + auto-lit → live preview → download. v2 added manual pattern rotation and repeat-count sliders (`app.js` `patternConfig`); a blend-mode picker is still deferred.
 - **Blend technique**: grayscale of the original shirt = lighting map, applied via `multiply` over a tiled copy of the uploaded texture, then clipped to the shirt's real alpha via `destination-in`. This is the standard Photoshop mockup technique (masking + lighting), validated against the actual Canvas 2D compositing math during planning — order matters (multiply before destination-in, not after) or edge antialiasing breaks.
 - **Must be served over http://**: opening `index.html` directly as `file://` will make `getImageData()` throw (Chrome canvas-tainting rules) when building the lighting map at page load. `app.js` catches this and shows an on-page instruction to run `python3 -m http.server`.
 
 ## How it works (app.js)
 1. On load: fetch `plain_white.png`, draw to an offscreen canvas, convert to a full-alpha grayscale "lighting map" (kept in memory, built once).
-2. On texture upload: scale the uploaded image so its larger dimension is ~175px, flatten it onto opaque white in a small tile canvas (guards against textures that have their own transparency), tile it across the full canvas via `createPattern`, multiply the lighting map on top, then `destination-in` the original shirt image to clip to its silhouette.
+2. On texture upload (and on any rotation/repeat-count slider change): scale the uploaded image so its larger dimension fits `SHIRT_WIDTH / repeatCount`, flatten it onto opaque white in a small tile canvas (guards against textures that have their own transparency), tile it across the full canvas via `createPattern` (rotated via `pattern.setTransform(new DOMMatrix().rotate(...))`), multiply the lighting map on top, then `destination-in` the original shirt image to clip to its silhouette.
 3. Download button exports the canvas via `toBlob('image/png')`.
 
 Full design rationale and the edge-case list (huge/tiny textures, non-image files, re-upload resetting state, etc.) are in the approved plan: `~/.claude/plans/lets-on-creating-a-jiggly-star.md`.
@@ -34,4 +34,5 @@ Full design rationale and the edge-case list (huge/tiny textures, non-image file
 
 ## Next steps
 1. Run `python3 -m http.server 8000` in this folder, open `http://localhost:8000/`, and manually run through the checklist in the plan's "Verification" section (10 steps: placeholder state, file:// negative control, tiled pattern upload, large texture, tiny swatch, non-image file, re-upload replacing not layering, download, cross-browser).
-2. If the result looks right: consider v2 additions the user may want later — manual blend-mode/scale/rotation controls, multiple garment images/colors, `git init` to start tracking history.
+2. Verify the new rotation/repeat-count sliders (see `~/.claude/plans/i-want-a-config-partitioned-globe.md`) live-update the preview correctly and that downloads reflect the current slider settings.
+3. If the result looks right: consider further v3 additions the user may want later — blend-mode picker, multiple garment images/colors, `git init` to start tracking history.

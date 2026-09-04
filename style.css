@@ -38,6 +38,10 @@ h1 {
   font-size: 0.9rem;
 }
 
+.controls input[type="range"] {
+  width: 100%;
+}
+
 #error-message {
   background: #ffebe9;
   border: 1px solid #ff8182;
