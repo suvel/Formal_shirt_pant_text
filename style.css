@@ -11,8 +11,40 @@ body {
 }
 
 main {
-  max-width: 560px;
+  max-width: 900px;
   margin: 0 auto;
+}
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.config-panel {
+  flex: 0 0 260px;
+}
+
+.preview-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: sticky;
+  top: 24px;
+}
+
+@media (max-width: 720px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .config-panel {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .preview-panel {
+    position: static;
+  }
 }
 
 h1 {
@@ -42,8 +74,34 @@ h1 {
   width: 100%;
 }
 
-.controls select {
-  width: 100%;
+.region-block {
+  border-bottom: 1px solid #d0d7de;
+  padding-bottom: 12px;
+  margin-bottom: 6px;
+}
+
+.region-block:last-child {
+  border-bottom: none;
+}
+
+.region-title {
+  font-size: 1rem;
+  margin: 0 0 6px;
+}
+
+.texture-preview {
+  display: block;
+  width: 50px;
+  height: 30px;
+  object-fit: cover;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  background: #eef0f2;
+  margin: 2px 0 4px;
+}
+
+.texture-preview[hidden] {
+  display: none;
 }
 
 #error-message {
@@ -211,7 +269,7 @@ h1 {
 #mask4-readout,
 #mask5-readout,
 #mask6-readout,
-#region-texture-status {
+.region-status {
   font-size: 0.85rem;
   color: #57606a;
   margin: 0 0 12px;

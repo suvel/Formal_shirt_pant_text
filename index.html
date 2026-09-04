@@ -6,100 +6,169 @@
   <title>Shirt Texture Mockup</title>
   <link rel="stylesheet" href="style.css?v=1788546243">
 </head>
-<body>
+<body class="debug-hidden">
   <main>
     <h1>Shirt Texture Mockup</h1>
-    <button id="toggle-debug-btn" type="button">Hide Debug Tools</button>
+    <button id="toggle-debug-btn" type="button">Show Debug Tools</button>
     <p class="instructions">Upload a texture or pattern image and it will be applied to the shirt, keeping the fabric's natural folds and shading.</p>
 
-    <div class="controls">
-      <label for="region-select">Region</label>
-      <select id="region-select">
-        <option value="main">Main Body</option>
-        <option value="rSleeve">R Sleeve</option>
-        <option value="lSleeve">L Sleeve</option>
-        <option value="rCollar">R Collar</option>
-        <option value="lCollar">L Collar</option>
-        <option value="rCuff">R Cuff</option>
-        <option value="lCuff">L Cuff</option>
-      </select>
-      <p id="region-texture-status">Texture: none</p>
+    <div class="layout">
+      <div class="config-panel">
+        <div class="controls">
+          <div class="region-block" data-region="main">
+            <h3 class="region-title">Main Body</h3>
+            <p id="region-status-main" class="region-status">Texture: none</p>
+            <label for="texture-input-main">Texture image</label>
+            <input type="file" id="texture-input-main" accept="image/*">
+            <img id="texture-preview-main" class="texture-preview" alt="Main Body texture preview" hidden>
+            <label for="rotation-input-main">Pattern rotation (<span id="rotation-value-main">0°</span>)</label>
+            <input type="range" id="rotation-input-main" min="0" max="359" step="1" value="0">
+            <label for="repeat-count-input-main">Pattern repeats across shirt (<span id="repeat-count-value-main">3×</span>)</label>
+            <input type="range" id="repeat-count-input-main" min="1" max="10" step="1" value="3">
+          </div>
 
-      <label for="texture-input">Texture image</label>
-      <input type="file" id="texture-input" accept="image/*">
+          <div class="region-block" data-region="rSleeve">
+            <h3 class="region-title">R Sleeve</h3>
+            <p id="region-status-rSleeve" class="region-status">Texture: none</p>
+            <label for="texture-input-rSleeve">Texture image</label>
+            <input type="file" id="texture-input-rSleeve" accept="image/*">
+            <img id="texture-preview-rSleeve" class="texture-preview" alt="R Sleeve texture preview" hidden>
+            <label for="rotation-input-rSleeve">Pattern rotation (<span id="rotation-value-rSleeve">0°</span>)</label>
+            <input type="range" id="rotation-input-rSleeve" min="0" max="359" step="1" value="0">
+            <label for="repeat-count-input-rSleeve">Pattern repeats across shirt (<span id="repeat-count-value-rSleeve">3×</span>)</label>
+            <input type="range" id="repeat-count-input-rSleeve" min="1" max="10" step="1" value="3">
+          </div>
 
-      <label for="rotation-input">Pattern rotation (<span id="rotation-value">0°</span>)</label>
-      <input type="range" id="rotation-input" min="0" max="359" step="1" value="0">
+          <div class="region-block" data-region="lSleeve">
+            <h3 class="region-title">L Sleeve</h3>
+            <p id="region-status-lSleeve" class="region-status">Texture: none</p>
+            <label for="texture-input-lSleeve">Texture image</label>
+            <input type="file" id="texture-input-lSleeve" accept="image/*">
+            <img id="texture-preview-lSleeve" class="texture-preview" alt="L Sleeve texture preview" hidden>
+            <label for="rotation-input-lSleeve">Pattern rotation (<span id="rotation-value-lSleeve">0°</span>)</label>
+            <input type="range" id="rotation-input-lSleeve" min="0" max="359" step="1" value="0">
+            <label for="repeat-count-input-lSleeve">Pattern repeats across shirt (<span id="repeat-count-value-lSleeve">3×</span>)</label>
+            <input type="range" id="repeat-count-input-lSleeve" min="1" max="10" step="1" value="3">
+          </div>
 
-      <label for="repeat-count-input">Pattern repeats across shirt (<span id="repeat-count-value">3×</span>)</label>
-      <input type="range" id="repeat-count-input" min="1" max="10" step="1" value="3">
+          <div class="region-block" data-region="rCollar">
+            <h3 class="region-title">R Collar</h3>
+            <p id="region-status-rCollar" class="region-status">Texture: none</p>
+            <label for="texture-input-rCollar">Texture image</label>
+            <input type="file" id="texture-input-rCollar" accept="image/*">
+            <img id="texture-preview-rCollar" class="texture-preview" alt="R Collar texture preview" hidden>
+            <label for="rotation-input-rCollar">Pattern rotation (<span id="rotation-value-rCollar">0°</span>)</label>
+            <input type="range" id="rotation-input-rCollar" min="0" max="359" step="1" value="0">
+            <label for="repeat-count-input-rCollar">Pattern repeats across shirt (<span id="repeat-count-value-rCollar">3×</span>)</label>
+            <input type="range" id="repeat-count-input-rCollar" min="1" max="10" step="1" value="3">
+          </div>
 
-      <label for="overlay-input">Overlay design image</label>
-      <input type="file" id="overlay-input" accept="image/*">
+          <div class="region-block" data-region="lCollar">
+            <h3 class="region-title">L Collar</h3>
+            <p id="region-status-lCollar" class="region-status">Texture: none</p>
+            <label for="texture-input-lCollar">Texture image</label>
+            <input type="file" id="texture-input-lCollar" accept="image/*">
+            <img id="texture-preview-lCollar" class="texture-preview" alt="L Collar texture preview" hidden>
+            <label for="rotation-input-lCollar">Pattern rotation (<span id="rotation-value-lCollar">0°</span>)</label>
+            <input type="range" id="rotation-input-lCollar" min="0" max="359" step="1" value="0">
+            <label for="repeat-count-input-lCollar">Pattern repeats across shirt (<span id="repeat-count-value-lCollar">3×</span>)</label>
+            <input type="range" id="repeat-count-input-lCollar" min="1" max="10" step="1" value="3">
+          </div>
+
+          <div class="region-block" data-region="rCuff">
+            <h3 class="region-title">R Cuff</h3>
+            <p id="region-status-rCuff" class="region-status">Texture: none</p>
+            <label for="texture-input-rCuff">Texture image</label>
+            <input type="file" id="texture-input-rCuff" accept="image/*">
+            <img id="texture-preview-rCuff" class="texture-preview" alt="R Cuff texture preview" hidden>
+            <label for="rotation-input-rCuff">Pattern rotation (<span id="rotation-value-rCuff">0°</span>)</label>
+            <input type="range" id="rotation-input-rCuff" min="0" max="359" step="1" value="0">
+            <label for="repeat-count-input-rCuff">Pattern repeats across shirt (<span id="repeat-count-value-rCuff">3×</span>)</label>
+            <input type="range" id="repeat-count-input-rCuff" min="1" max="10" step="1" value="3">
+          </div>
+
+          <div class="region-block" data-region="lCuff">
+            <h3 class="region-title">L Cuff</h3>
+            <p id="region-status-lCuff" class="region-status">Texture: none</p>
+            <label for="texture-input-lCuff">Texture image</label>
+            <input type="file" id="texture-input-lCuff" accept="image/*">
+            <img id="texture-preview-lCuff" class="texture-preview" alt="L Cuff texture preview" hidden>
+            <label for="rotation-input-lCuff">Pattern rotation (<span id="rotation-value-lCuff">0°</span>)</label>
+            <input type="range" id="rotation-input-lCuff" min="0" max="359" step="1" value="0">
+            <label for="repeat-count-input-lCuff">Pattern repeats across shirt (<span id="repeat-count-value-lCuff">3×</span>)</label>
+            <input type="range" id="repeat-count-input-lCuff" min="1" max="10" step="1" value="3">
+          </div>
+
+          <label for="overlay-input">Overlay design image</label>
+          <input type="file" id="overlay-input" accept="image/*">
+        </div>
+
+        <p id="error-message" role="alert" hidden></p>
+      </div>
+
+      <div class="preview-panel">
+        <p class="instructions">Drag the 4 corner handles on the preview to position and warp the overlay design.</p>
+        <p id="corner-readout"></p>
+
+        <div class="canvas-wrap">
+          <canvas id="preview-canvas" width="480" height="520">
+            Your browser does not support the canvas element.
+          </canvas>
+          <div class="corner-handle" data-index="0"></div>
+          <div class="corner-handle" data-index="1"></div>
+          <div class="corner-handle" data-index="2"></div>
+          <div class="corner-handle" data-index="3"></div>
+          <div class="mask-handle" data-mask-index="0"></div>
+          <div class="mask-handle" data-mask-index="1"></div>
+          <div class="mask-handle" data-mask-index="2"></div>
+          <div class="mask-handle" data-mask-index="3"></div>
+          <div class="mask-handle" data-mask-index="4"></div>
+          <div class="mask-handle" data-mask-index="5"></div>
+          <div class="mask-handle" data-mask-index="6"></div>
+          <div class="mask-handle" data-mask-index="7"></div>
+          <div class="mask2-handle" data-mask2-index="0"></div>
+          <div class="mask2-handle" data-mask2-index="1"></div>
+          <div class="mask2-handle" data-mask2-index="2"></div>
+          <div class="mask2-handle" data-mask2-index="3"></div>
+          <div class="mask2-handle" data-mask2-index="4"></div>
+          <div class="mask2-handle" data-mask2-index="5"></div>
+          <div class="mask2-handle" data-mask2-index="6"></div>
+          <div class="mask2-handle" data-mask2-index="7"></div>
+          <div class="mask5-handle" data-mask5-index="0"></div>
+          <div class="mask5-handle" data-mask5-index="1"></div>
+          <div class="mask5-handle" data-mask5-index="2"></div>
+          <div class="mask5-handle" data-mask5-index="3"></div>
+          <div class="mask5-handle" data-mask5-index="4"></div>
+          <div class="mask5-handle" data-mask5-index="5"></div>
+          <div class="mask5-handle" data-mask5-index="6"></div>
+          <div class="mask5-handle" data-mask5-index="7"></div>
+          <div class="mask6-handle" data-mask6-index="0"></div>
+          <div class="mask6-handle" data-mask6-index="1"></div>
+          <div class="mask6-handle" data-mask6-index="2"></div>
+          <div class="mask6-handle" data-mask6-index="3"></div>
+          <div class="mask6-handle" data-mask6-index="4"></div>
+          <div class="mask6-handle" data-mask6-index="5"></div>
+          <div class="mask6-handle" data-mask6-index="6"></div>
+          <div class="mask6-handle" data-mask6-index="7"></div>
+        </div>
+
+        <p class="instructions">Drag the 8 small pink handles to skew and tweak each pink mask.</p>
+        <p id="mask-readout"></p>
+        <p id="mask2-readout"></p>
+
+        <p class="instructions">Yellow handles: drag to tweak each cuff mask.</p>
+        <p id="mask5-readout"></p>
+        <p id="mask6-readout"></p>
+
+        <p class="instructions">Orange sleeve masks: drag their handles to tweak, or double their points.</p>
+        <p id="mask3-readout"></p>
+        <button id="mask3-double-btn" type="button">Double Right Sleeve Mask Points</button>
+        <p id="mask4-readout"></p>
+        <button id="mask4-double-btn" type="button">Double Left Sleeve Mask Points</button>
+
+        <button id="download-btn" disabled>Download PNG</button>
+      </div>
     </div>
-
-    <p id="error-message" role="alert" hidden></p>
-
-    <p class="instructions">Drag the 4 corner handles on the preview to position and warp the overlay design.</p>
-    <p id="corner-readout"></p>
-
-    <div class="canvas-wrap">
-      <canvas id="preview-canvas" width="480" height="520">
-        Your browser does not support the canvas element.
-      </canvas>
-      <div class="corner-handle" data-index="0"></div>
-      <div class="corner-handle" data-index="1"></div>
-      <div class="corner-handle" data-index="2"></div>
-      <div class="corner-handle" data-index="3"></div>
-      <div class="mask-handle" data-mask-index="0"></div>
-      <div class="mask-handle" data-mask-index="1"></div>
-      <div class="mask-handle" data-mask-index="2"></div>
-      <div class="mask-handle" data-mask-index="3"></div>
-      <div class="mask-handle" data-mask-index="4"></div>
-      <div class="mask-handle" data-mask-index="5"></div>
-      <div class="mask-handle" data-mask-index="6"></div>
-      <div class="mask-handle" data-mask-index="7"></div>
-      <div class="mask2-handle" data-mask2-index="0"></div>
-      <div class="mask2-handle" data-mask2-index="1"></div>
-      <div class="mask2-handle" data-mask2-index="2"></div>
-      <div class="mask2-handle" data-mask2-index="3"></div>
-      <div class="mask2-handle" data-mask2-index="4"></div>
-      <div class="mask2-handle" data-mask2-index="5"></div>
-      <div class="mask2-handle" data-mask2-index="6"></div>
-      <div class="mask2-handle" data-mask2-index="7"></div>
-      <div class="mask5-handle" data-mask5-index="0"></div>
-      <div class="mask5-handle" data-mask5-index="1"></div>
-      <div class="mask5-handle" data-mask5-index="2"></div>
-      <div class="mask5-handle" data-mask5-index="3"></div>
-      <div class="mask5-handle" data-mask5-index="4"></div>
-      <div class="mask5-handle" data-mask5-index="5"></div>
-      <div class="mask5-handle" data-mask5-index="6"></div>
-      <div class="mask5-handle" data-mask5-index="7"></div>
-      <div class="mask6-handle" data-mask6-index="0"></div>
-      <div class="mask6-handle" data-mask6-index="1"></div>
-      <div class="mask6-handle" data-mask6-index="2"></div>
-      <div class="mask6-handle" data-mask6-index="3"></div>
-      <div class="mask6-handle" data-mask6-index="4"></div>
-      <div class="mask6-handle" data-mask6-index="5"></div>
-      <div class="mask6-handle" data-mask6-index="6"></div>
-      <div class="mask6-handle" data-mask6-index="7"></div>
-    </div>
-
-    <p class="instructions">Drag the 8 small pink handles to skew and tweak each pink mask.</p>
-    <p id="mask-readout"></p>
-    <p id="mask2-readout"></p>
-
-    <p class="instructions">Yellow handles: drag to tweak each cuff mask.</p>
-    <p id="mask5-readout"></p>
-    <p id="mask6-readout"></p>
-
-    <p class="instructions">Orange sleeve masks: drag their handles to tweak, or double their points.</p>
-    <p id="mask3-readout"></p>
-    <button id="mask3-double-btn" type="button">Double Right Sleeve Mask Points</button>
-    <p id="mask4-readout"></p>
-    <button id="mask4-double-btn" type="button">Double Left Sleeve Mask Points</button>
-
-    <button id="download-btn" disabled>Download PNG</button>
 
     <section id="debug-section">
       <h2>Debug</h2>

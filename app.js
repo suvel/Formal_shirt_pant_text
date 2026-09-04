@@ -21,14 +21,7 @@
     { x: 160, y: 340 }
   ];
 
-  var textureInput = null;
-  var rotationInput = null;
-  var rotationValueEl = null;
-  var repeatCountInput = null;
-  var repeatCountValueEl = null;
   var overlayInput = null;
-  var regionSelectEl = null;
-  var regionTextureStatusEl = null;
   var cornerReadoutEl = null;
   var cornerHandleEls = null;
   var maskReadoutEl = null;
@@ -399,11 +392,7 @@
     }
   };
 
-  var activeRegionId = "main";
-
-  function getActiveRegion() {
-    return regions[activeRegionId];
-  }
+  var REGION_IDS = ["main", "rCollar", "lCollar", "rSleeve", "lSleeve", "rCuff", "lCuff"];
 
   function anyRegionHasTexture() {
     return !!(
@@ -443,15 +432,11 @@
     updateDebugLog();
   }
 
-  function resetFileInput() {
-    textureInput.value = "";
-  }
-
   function resetOverlayInput() {
     overlayInput.value = "";
   }
 
-  function handleFileChange(event) {
+  function handleFileChange(event, region) {
     var files = event.target.files;
     if (!files || files.length === 0) {
       return;
@@ -460,11 +445,9 @@
     var file = files[0];
     if (!file.type || file.type.indexOf("image/") !== 0) {
       showError("Please choose an image file (PNG, JPG, WEBP, etc.).");
-      resetFileInput();
+      region.textureInputEl.value = "";
       return;
     }
-
-    var region = getActiveRegion();
 
     if (region.objectUrl) {
       URL.revokeObjectURL(region.objectUrl);
@@ -480,7 +463,9 @@
         clearError();
         region.textureImg = img;
         region.textureFileName = file.name;
-        updateRegionControlsUI();
+        region.previewEl.src = objectUrl;
+        region.previewEl.hidden = false;
+        updateRegionControlsUI(region);
         renderAll();
       } catch (err) {
         showError("Could not apply that texture: " + err.message);
@@ -488,7 +473,7 @@
     };
     img.onerror = function () {
       showError("That file could not be read as an image.");
-      resetFileInput();
+      region.textureInputEl.value = "";
     };
     img.src = objectUrl;
   }
@@ -543,12 +528,11 @@
     img.src = objectUrl;
   }
 
-  function handlePatternConfigChange() {
-    var region = getActiveRegion();
-    region.rotationDeg = Number(rotationInput.value);
-    region.repeatCount = Number(repeatCountInput.value);
-    rotationValueEl.textContent = region.rotationDeg + "°";
-    repeatCountValueEl.textContent = region.repeatCount + "×";
+  function handlePatternConfigChange(region) {
+    region.rotationDeg = Number(region.rotationInputEl.value);
+    region.repeatCount = Number(region.repeatCountInputEl.value);
+    region.rotationValueEl.textContent = region.rotationDeg + "°";
+    region.repeatCountValueEl.textContent = region.repeatCount + "×";
 
     if (region.textureImg) {
       try {
@@ -560,18 +544,12 @@
     }
   }
 
-  function updateRegionControlsUI() {
-    var region = getActiveRegion();
-    rotationInput.value = String(region.rotationDeg);
-    rotationValueEl.textContent = region.rotationDeg + "°";
-    repeatCountInput.value = String(region.repeatCount);
-    repeatCountValueEl.textContent = region.repeatCount + "×";
-    regionTextureStatusEl.textContent = "Texture: " + (region.textureFileName || "none");
-  }
-
-  function handleRegionSelectChange() {
-    activeRegionId = regionSelectEl.value;
-    updateRegionControlsUI();
+  function updateRegionControlsUI(region) {
+    region.rotationInputEl.value = String(region.rotationDeg);
+    region.rotationValueEl.textContent = region.rotationDeg + "°";
+    region.repeatCountInputEl.value = String(region.repeatCount);
+    region.repeatCountValueEl.textContent = region.repeatCount + "×";
+    region.statusEl.textContent = "Texture: " + (region.textureFileName || "none");
   }
 
   function positionHandles() {
@@ -912,8 +890,7 @@
     lines.push("colorMask4Points: " + JSON.stringify(colorMask4Points));
     lines.push("colorMask5Points: " + JSON.stringify(colorMask5Points));
     lines.push("colorMask6Points: " + JSON.stringify(colorMask6Points));
-    lines.push("activeRegion: " + activeRegionId);
-    ["main", "rCollar", "lCollar", "rSleeve", "lSleeve", "rCuff", "lCuff"].forEach(function (id) {
+    REGION_IDS.forEach(function (id) {
       var r = regions[id];
       lines.push(
         r.label + ": rotationDeg=" + r.rotationDeg + " repeatCount=" + r.repeatCount +
@@ -1044,14 +1021,7 @@
   }
 
   function init() {
-    textureInput = document.getElementById("texture-input");
-    rotationInput = document.getElementById("rotation-input");
-    rotationValueEl = document.getElementById("rotation-value");
-    repeatCountInput = document.getElementById("repeat-count-input");
-    repeatCountValueEl = document.getElementById("repeat-count-value");
     overlayInput = document.getElementById("overlay-input");
-    regionSelectEl = document.getElementById("region-select");
-    regionTextureStatusEl = document.getElementById("region-texture-status");
     cornerReadoutEl = document.getElementById("corner-readout");
     cornerHandleEls = Array.prototype.slice.call(
       document.querySelectorAll(".corner-handle")
@@ -1084,11 +1054,7 @@
     outputCanvas = document.getElementById("preview-canvas");
     outputCtx = outputCanvas.getContext("2d");
 
-    textureInput.addEventListener("change", handleFileChange);
-    rotationInput.addEventListener("input", handlePatternConfigChange);
-    repeatCountInput.addEventListener("input", handlePatternConfigChange);
     overlayInput.addEventListener("change", handleOverlayFileChange);
-    regionSelectEl.addEventListener("change", handleRegionSelectChange);
     cornerHandleEls.forEach(function (el) {
       el.addEventListener("pointerdown", handleHandlePointerDown);
     });
@@ -1123,7 +1089,29 @@
     updateMask3Readout();
     rebuildMask4Handles();
     updateMask4Readout();
-    updateRegionControlsUI();
+
+    REGION_IDS.forEach(function (id) {
+      var region = regions[id];
+      region.textureInputEl = document.getElementById("texture-input-" + id);
+      region.rotationInputEl = document.getElementById("rotation-input-" + id);
+      region.rotationValueEl = document.getElementById("rotation-value-" + id);
+      region.repeatCountInputEl = document.getElementById("repeat-count-input-" + id);
+      region.repeatCountValueEl = document.getElementById("repeat-count-value-" + id);
+      region.statusEl = document.getElementById("region-status-" + id);
+      region.previewEl = document.getElementById("texture-preview-" + id);
+
+      region.textureInputEl.addEventListener("change", function (event) {
+        handleFileChange(event, region);
+      });
+      region.rotationInputEl.addEventListener("input", function () {
+        handlePatternConfigChange(region);
+      });
+      region.repeatCountInputEl.addEventListener("input", function () {
+        handlePatternConfigChange(region);
+      });
+
+      updateRegionControlsUI(region);
+    });
 
     loadBaseImageAndBuildLightingMap().catch(function (err) {
       showError(err.message);
