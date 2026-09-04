@@ -40,6 +40,13 @@
   var maskHandleEls = null;
   var mask2ReadoutEl = null;
   var mask2HandleEls = null;
+  var mask3ReadoutEl = null;
+  var mask3HandleEls = [];
+  var mask3DoubleBtn = null;
+  var mask4ReadoutEl = null;
+  var mask4HandleEls = [];
+  var mask4DoubleBtn = null;
+  var canvasWrapEl = null;
   var debugLogEl = null;
   var errorMessageEl = null;
   var downloadBtn = null;
@@ -356,6 +363,40 @@
     outputCtx.globalCompositeOperation = "source-over";
   }
 
+  var colorMask3Points = [{ "x": 363.8000030517578, "y": 105.52500343322754 }, { "x": 378.59999084472656, "y": 70.32499885559082 }, { "x": 405.8000030517578, "y": 84.72500038146973 }, { "x": 476.6000213623047, "y": 258.7249984741211 }, { "x": 480, "y": 349.125 }, { "x": 463.80003356933594, "y": 439.12501525878906 }, { "x": 403.40000915527344, "y": 430.3249969482422 }, { "x": 371.00001525878906, "y": 222.7250099182129 }];
+
+  function drawColorMask3() {
+    outputCtx.beginPath();
+    outputCtx.moveTo(colorMask3Points[0].x, colorMask3Points[0].y);
+    for (var i = 1; i < colorMask3Points.length; i++) {
+      outputCtx.lineTo(colorMask3Points[i].x, colorMask3Points[i].y);
+    }
+    outputCtx.closePath();
+    outputCtx.fillStyle = "rgba(255, 140, 0, 0.5)";
+    outputCtx.fill();
+
+    outputCtx.globalCompositeOperation = "destination-in";
+    outputCtx.drawImage(baseImage, 0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
+    outputCtx.globalCompositeOperation = "source-over";
+  }
+
+  var colorMask4Points = [{ "x": 118.60000610351562, "y": 106.32500648498535 }, { "x": 99.80000305175781, "y": 69.5250015258789 }, { "x": 78.60000610351562, "y": 91.92500305175781 }, { "x": 3.4, "y": 258.72 }, { "x": 5.400001525878906, "y": 349.52500915527344 }, { "x": 28.600006103515625, "y": 447.12501525878906 }, { "x": 90.60000610351562, "y": 430.7250061035156 }, { "x": 104.60000610351562, "y": 232.72500038146973 }]
+
+  function drawColorMask4() {
+    outputCtx.beginPath();
+    outputCtx.moveTo(colorMask4Points[0].x, colorMask4Points[0].y);
+    for (var i = 1; i < colorMask4Points.length; i++) {
+      outputCtx.lineTo(colorMask4Points[i].x, colorMask4Points[i].y);
+    }
+    outputCtx.closePath();
+    outputCtx.fillStyle = "rgba(255, 140, 0, 0.5)";
+    outputCtx.fill();
+
+    outputCtx.globalCompositeOperation = "destination-in";
+    outputCtx.drawImage(baseImage, 0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
+    outputCtx.globalCompositeOperation = "source-over";
+  }
+
   function renderAll() {
     if (currentTextureImg) {
       compositeTexture(currentTextureImg);
@@ -365,6 +406,8 @@
     drawOverlay();
     drawColorMask();
     drawColorMask2();
+    drawColorMask3();
+    drawColorMask4();
     downloadBtn.disabled = !(currentTextureImg || overlayImg);
     updateDebugLog();
   }
@@ -535,6 +578,182 @@
     mask2ReadoutEl.textContent = "Mask 2: " + parts.join(" ");
   }
 
+  function positionMask3Handles() {
+    for (var i = 0; i < mask3HandleEls.length; i++) {
+      var pt = colorMask3Points[i];
+      mask3HandleEls[i].style.left = (pt.x / SHIRT_WIDTH) * 100 + "%";
+      mask3HandleEls[i].style.top = (pt.y / SHIRT_HEIGHT) * 100 + "%";
+    }
+  }
+
+  function updateMask3Readout() {
+    var parts = [];
+    for (var i = 0; i < colorMask3Points.length; i++) {
+      parts.push(
+        "(" + Math.round(colorMask3Points[i].x) + "," + Math.round(colorMask3Points[i].y) + ")"
+      );
+    }
+    mask3ReadoutEl.textContent = "Mask 3 (" + colorMask3Points.length + " pts): " + parts.join(" ");
+  }
+
+  function handleMask3HandlePointerDown(event) {
+    var handleEl = event.currentTarget;
+    var index = Number(handleEl.getAttribute("data-mask3-index"));
+    handleEl.setPointerCapture(event.pointerId);
+
+    function onMove(moveEvent) {
+      colorMask3Points[index] = clientToCanvasPoint(moveEvent.clientX, moveEvent.clientY);
+      positionMask3Handles();
+      updateMask3Readout();
+      try {
+        renderAll();
+      } catch (err) {
+        showError("Could not render the mask: " + err.message);
+      }
+    }
+
+    function onUp(upEvent) {
+      handleEl.releasePointerCapture(upEvent.pointerId);
+      handleEl.removeEventListener("pointermove", onMove);
+      handleEl.removeEventListener("pointerup", onUp);
+      handleEl.removeEventListener("pointercancel", onUp);
+    }
+
+    handleEl.addEventListener("pointermove", onMove);
+    handleEl.addEventListener("pointerup", onUp);
+    handleEl.addEventListener("pointercancel", onUp);
+    event.preventDefault();
+  }
+
+  function rebuildMask3Handles() {
+    for (var i = 0; i < mask3HandleEls.length; i++) {
+      mask3HandleEls[i].parentNode.removeChild(mask3HandleEls[i]);
+    }
+    mask3HandleEls = [];
+
+    for (var j = 0; j < colorMask3Points.length; j++) {
+      var handleEl = document.createElement("div");
+      handleEl.className = "mask3-handle";
+      handleEl.setAttribute("data-mask3-index", String(j));
+      handleEl.addEventListener("pointerdown", handleMask3HandlePointerDown);
+      canvasWrapEl.appendChild(handleEl);
+      mask3HandleEls.push(handleEl);
+    }
+
+    positionMask3Handles();
+  }
+
+  function subdivideMask3Points() {
+    var newPoints = [];
+    var n = colorMask3Points.length;
+    for (var i = 0; i < n; i++) {
+      var current = colorMask3Points[i];
+      var next = colorMask3Points[(i + 1) % n];
+      newPoints.push(current);
+      newPoints.push({
+        x: (current.x + next.x) / 2,
+        y: (current.y + next.y) / 2
+      });
+    }
+    colorMask3Points = newPoints;
+
+    rebuildMask3Handles();
+    updateMask3Readout();
+    try {
+      renderAll();
+    } catch (err) {
+      showError("Could not render the mask: " + err.message);
+    }
+  }
+
+  function positionMask4Handles() {
+    for (var i = 0; i < mask4HandleEls.length; i++) {
+      var pt = colorMask4Points[i];
+      mask4HandleEls[i].style.left = (pt.x / SHIRT_WIDTH) * 100 + "%";
+      mask4HandleEls[i].style.top = (pt.y / SHIRT_HEIGHT) * 100 + "%";
+    }
+  }
+
+  function updateMask4Readout() {
+    var parts = [];
+    for (var i = 0; i < colorMask4Points.length; i++) {
+      parts.push(
+        "(" + Math.round(colorMask4Points[i].x) + "," + Math.round(colorMask4Points[i].y) + ")"
+      );
+    }
+    mask4ReadoutEl.textContent = "Mask 4 (" + colorMask4Points.length + " pts): " + parts.join(" ");
+  }
+
+  function handleMask4HandlePointerDown(event) {
+    var handleEl = event.currentTarget;
+    var index = Number(handleEl.getAttribute("data-mask4-index"));
+    handleEl.setPointerCapture(event.pointerId);
+
+    function onMove(moveEvent) {
+      colorMask4Points[index] = clientToCanvasPoint(moveEvent.clientX, moveEvent.clientY);
+      positionMask4Handles();
+      updateMask4Readout();
+      try {
+        renderAll();
+      } catch (err) {
+        showError("Could not render the mask: " + err.message);
+      }
+    }
+
+    function onUp(upEvent) {
+      handleEl.releasePointerCapture(upEvent.pointerId);
+      handleEl.removeEventListener("pointermove", onMove);
+      handleEl.removeEventListener("pointerup", onUp);
+      handleEl.removeEventListener("pointercancel", onUp);
+    }
+
+    handleEl.addEventListener("pointermove", onMove);
+    handleEl.addEventListener("pointerup", onUp);
+    handleEl.addEventListener("pointercancel", onUp);
+    event.preventDefault();
+  }
+
+  function rebuildMask4Handles() {
+    for (var i = 0; i < mask4HandleEls.length; i++) {
+      mask4HandleEls[i].parentNode.removeChild(mask4HandleEls[i]);
+    }
+    mask4HandleEls = [];
+
+    for (var j = 0; j < colorMask4Points.length; j++) {
+      var handleEl = document.createElement("div");
+      handleEl.className = "mask4-handle";
+      handleEl.setAttribute("data-mask4-index", String(j));
+      handleEl.addEventListener("pointerdown", handleMask4HandlePointerDown);
+      canvasWrapEl.appendChild(handleEl);
+      mask4HandleEls.push(handleEl);
+    }
+
+    positionMask4Handles();
+  }
+
+  function subdivideMask4Points() {
+    var newPoints = [];
+    var n = colorMask4Points.length;
+    for (var i = 0; i < n; i++) {
+      var current = colorMask4Points[i];
+      var next = colorMask4Points[(i + 1) % n];
+      newPoints.push(current);
+      newPoints.push({
+        x: (current.x + next.x) / 2,
+        y: (current.y + next.y) / 2
+      });
+    }
+    colorMask4Points = newPoints;
+
+    rebuildMask4Handles();
+    updateMask4Readout();
+    try {
+      renderAll();
+    } catch (err) {
+      showError("Could not render the mask: " + err.message);
+    }
+  }
+
   function updateDebugLog() {
     if (!debugLogEl) {
       return;
@@ -545,6 +764,8 @@
     lines.push("quadPoints: " + JSON.stringify(quadPoints));
     lines.push("colorMaskPoints: " + JSON.stringify(colorMaskPoints));
     lines.push("colorMask2Points: " + JSON.stringify(colorMask2Points));
+    lines.push("colorMask3Points: " + JSON.stringify(colorMask3Points));
+    lines.push("colorMask4Points: " + JSON.stringify(colorMask4Points));
     lines.push("patternConfig: " + JSON.stringify(patternConfig));
     lines.push("hasTexture: " + !!currentTextureImg + ", hasOverlay: " + !!overlayImg);
     debugLogEl.textContent = lines.join("\n");
@@ -683,6 +904,11 @@
     mask2HandleEls = Array.prototype.slice.call(
       document.querySelectorAll(".mask2-handle")
     );
+    mask3ReadoutEl = document.getElementById("mask3-readout");
+    mask3DoubleBtn = document.getElementById("mask3-double-btn");
+    mask4ReadoutEl = document.getElementById("mask4-readout");
+    mask4DoubleBtn = document.getElementById("mask4-double-btn");
+    canvasWrapEl = document.querySelector(".canvas-wrap");
     debugLogEl = document.getElementById("debug-log");
     errorMessageEl = document.getElementById("error-message");
     downloadBtn = document.getElementById("download-btn");
@@ -702,6 +928,8 @@
     mask2HandleEls.forEach(function (el) {
       el.addEventListener("pointerdown", handleMask2HandlePointerDown);
     });
+    mask3DoubleBtn.addEventListener("click", subdivideMask3Points);
+    mask4DoubleBtn.addEventListener("click", subdivideMask4Points);
     downloadBtn.addEventListener("click", handleDownload);
 
     positionHandles();
@@ -710,6 +938,10 @@
     updateMaskReadout();
     positionMask2Handles();
     updateMask2Readout();
+    rebuildMask3Handles();
+    updateMask3Readout();
+    rebuildMask4Handles();
+    updateMask4Readout();
 
     loadBaseImageAndBuildLightingMap().catch(function (err) {
       showError(err.message);

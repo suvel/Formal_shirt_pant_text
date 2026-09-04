@@ -129,11 +129,52 @@ h1 {
   cursor: grabbing;
 }
 
+.mask3-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: #ff8c00;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 0 1px #b35f00;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+}
+
+.mask3-handle:active {
+  cursor: grabbing;
+}
+
+.mask4-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: #ffa500;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 0 1px #cc7a00;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+}
+
+.mask4-handle:active {
+  cursor: grabbing;
+}
+
 #mask-readout,
-#mask2-readout {
+#mask2-readout,
+#mask3-readout,
+#mask4-readout {
   font-size: 0.85rem;
   color: #57606a;
   margin: 0 0 12px;
+}
+
+#mask3-double-btn,
+#mask4-double-btn {
+  margin: 0 8px 20px 0;
 }
 
 #debug-section {
