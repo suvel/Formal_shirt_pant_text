@@ -12,6 +12,16 @@
     <p class="instructions">Upload a texture or pattern image and it will be applied to the shirt, keeping the fabric's natural folds and shading.</p>
 
     <div class="controls">
+      <label for="region-select">Region</label>
+      <select id="region-select">
+        <option value="main">Main Body</option>
+        <option value="rSleeve">R Sleeve</option>
+        <option value="lSleeve">L Sleeve</option>
+        <option value="rCollar">R Collar</option>
+        <option value="lCollar">L Collar</option>
+      </select>
+      <p id="region-texture-status">Texture: none</p>
+
       <label for="texture-input">Texture image</label>
       <input type="file" id="texture-input" accept="image/*">
 

@@ -42,6 +42,10 @@ h1 {
   width: 100%;
 }
 
+.controls select {
+  width: 100%;
+}
+
 #error-message {
   background: #ffebe9;
   border: 1px solid #ff8182;
@@ -166,7 +170,8 @@ h1 {
 #mask-readout,
 #mask2-readout,
 #mask3-readout,
-#mask4-readout {
+#mask4-readout,
+#region-texture-status {
   font-size: 0.85rem;
   color: #57606a;
   margin: 0 0 12px;

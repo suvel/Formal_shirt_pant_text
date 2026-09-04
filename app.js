@@ -5,18 +5,11 @@
   var SHIRT_WIDTH = 480;
   var SHIRT_HEIGHT = 520;
 
-  var patternConfig = {
-    rotationDeg: 0,
-    repeatCount: 3
-  };
-
   var baseImage = null;
   var lightingCanvas = null;
   var lightingCtx = null;
   var outputCanvas = null;
   var outputCtx = null;
-  var currentObjectUrl = null;
-  var currentTextureImg = null;
 
   var overlayImg = null;
   var overlaySourceData = null;
@@ -34,6 +27,8 @@
   var repeatCountInput = null;
   var repeatCountValueEl = null;
   var overlayInput = null;
+  var regionSelectEl = null;
+  var regionTextureStatusEl = null;
   var cornerReadoutEl = null;
   var cornerHandleEls = null;
   var maskReadoutEl = null;
@@ -121,10 +116,11 @@
   }
   TaintedCanvasError.prototype = Object.create(Error.prototype);
 
-  function compositeTexture(textureImg) {
+  function paintTexturedRegion(region) {
+    var textureImg = region.textureImg;
     var naturalW = textureImg.naturalWidth || textureImg.width;
     var naturalH = textureImg.naturalHeight || textureImg.height;
-    var tileTargetDim = SHIRT_WIDTH / patternConfig.repeatCount;
+    var tileTargetDim = SHIRT_WIDTH / region.repeatCount;
     var scale = tileTargetDim / Math.max(naturalW, naturalH);
     var tileW = Math.max(1, Math.round(naturalW * scale));
     var tileH = Math.max(1, Math.round(naturalH * scale));
@@ -139,7 +135,20 @@
     tileCtx.drawImage(textureImg, 0, 0, tileW, tileH);
 
     var pattern = outputCtx.createPattern(tileCanvas, "repeat");
-    pattern.setTransform(new DOMMatrix().rotate(patternConfig.rotationDeg));
+    pattern.setTransform(new DOMMatrix().rotate(region.rotationDeg));
+
+    outputCtx.save();
+
+    var points = region.getPoints();
+    if (points) {
+      outputCtx.beginPath();
+      outputCtx.moveTo(points[0].x, points[0].y);
+      for (var i = 1; i < points.length; i++) {
+        outputCtx.lineTo(points[i].x, points[i].y);
+      }
+      outputCtx.closePath();
+      outputCtx.clip();
+    }
 
     outputCtx.globalCompositeOperation = "source-over";
     outputCtx.clearRect(0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
@@ -152,9 +161,7 @@
     outputCtx.globalCompositeOperation = "destination-in";
     outputCtx.drawImage(baseImage, 0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
 
-    outputCtx.globalCompositeOperation = "source-over";
-
-    downloadBtn.disabled = false;
+    outputCtx.restore();
   }
 
   // Maps the unit square (0,0)-(1,0)-(1,1)-(0,1) onto an arbitrary
@@ -332,83 +339,79 @@
     { "x": 266.5, "y": 81.921875 }, { "x": 278.8333435058594, "y": 57.921875 }, { "x": 284.8333435058594, "y": 14.921875 }, { "x": 292.16668701171875, "y": 25.588539123535156 }, { "x": 297.8333435058594, "y": 31.921875 }, { "x": 298.5, "y": 56.921875 }, { "x": 291.5, "y": 103.25520324707031 }, { "x": 278.8333435058594, "y": 91.921875 }
   ];
 
-  function drawColorMask() {
-    outputCtx.beginPath();
-    outputCtx.moveTo(colorMaskPoints[0].x, colorMaskPoints[0].y);
-    for (var i = 1; i < colorMaskPoints.length; i++) {
-      outputCtx.lineTo(colorMaskPoints[i].x, colorMaskPoints[i].y);
-    }
-    outputCtx.closePath();
-    outputCtx.fillStyle = "rgba(255, 182, 193, 0.5)";
-    outputCtx.fill();
-
-    outputCtx.globalCompositeOperation = "destination-in";
-    outputCtx.drawImage(baseImage, 0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
-    outputCtx.globalCompositeOperation = "source-over";
-  }
-
   var colorMask2Points = [{ "x": 217.5, "y": 78.58854675292969 }, { "x": 195.83334350585938, "y": 39.58854675292969 }, { "x": 192.1666717529297, "y": 8.921875 }, { "x": 183.83334350585938, "y": 22.255203247070312 }, { "x": 177.1666717529297, "y": 28.255203247070312 }, { "x": 176.5, "y": 49.921875 }, { "x": 188.83334350585938, "y": 104.25520324707031 }, { "x": 201.17, "y": 91.92 }]
-  function drawColorMask2() {
-    outputCtx.beginPath();
-    outputCtx.moveTo(colorMask2Points[0].x, colorMask2Points[0].y);
-    for (var i = 1; i < colorMask2Points.length; i++) {
-      outputCtx.lineTo(colorMask2Points[i].x, colorMask2Points[i].y);
-    }
-    outputCtx.closePath();
-    outputCtx.fillStyle = "rgba(255, 182, 193, 0.5)";
-    outputCtx.fill();
 
-    outputCtx.globalCompositeOperation = "destination-in";
-    outputCtx.drawImage(baseImage, 0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
-    outputCtx.globalCompositeOperation = "source-over";
+  var colorMask3Points = [{ "x": 362.57141859872064, "y": 129.6428623199463 }, { "x": 367.5, "y": 96.72500228881836 }, { "x": 371.1999969482422, "y": 87.92500114440918 }, { "x": 374.8999938964844, "y": 79.125 }, { "x": 378.59999084472656, "y": 70.32499885559082 }, { "x": 383.1999969482422, "y": 75.3250002861023 }, { "x": 387.8000030517578, "y": 80.32500171661377 }, { "x": 392.40000915527344, "y": 85.32500314712524 }, { "x": 397.00001525878906, "y": 90.32500457763672 }, { "x": 415.8000183105469, "y": 122.32500076293945 }, { "x": 434.6000213623047, "y": 154.3249969482422 }, { "x": 448.2000274658203, "y": 187.125 }, { "x": 461.80003356933594, "y": 219.9250030517578 }, { "x": 466.2000274658203, "y": 239.72500228881836 }, { "x": 472.857117153351, "y": 259.92859268188477 }, { "x": 475.00001525878906, "y": 279.32500076293945 }, { "x": 479.40000915527344, "y": 299.125 }, { "x": 478.6000213623047, "y": 333.125 }, { "x": 477.80003356933594, "y": 367.125 }, { "x": 469.00001525878906, "y": 403.7250061035156 }, { "x": 460.1999969482422, "y": 440.32501220703125 }, { "x": 446, "y": 437.825008392334 }, { "x": 402.0000049591061, "y": 433.0714454650879 }, { "x": 403.714299283708, "y": 398.78573989868164 }, { "x": 402.0000049591061, "y": 375.35715103149414 }, { "x": 402.5714160555893, "y": 323.35715103149414 }, { "x": 408.8571212223612, "y": 309.0714454650879 }, { "x": 400.28571063450426, "y": 292.50000381469727 }, { "x": 397.4285941169361, "y": 274.214298248291 }, { "x": 390.5714168185287, "y": 265.0714454650879 }, { "x": 369.8000030517578, "y": 222.32500457763672 }, { "x": 367.1999969482422, "y": 163.5250062942505 }];
+
+  var colorMask4Points = [{ "x": 118.60000610351562, "y": 106.32500648498535 }, { "x": 113.90000534057617, "y": 97.12500524520874 }, { "x": 109.20000457763672, "y": 87.92500400543213 }, { "x": 104.50000381469727, "y": 78.72500276565552 }, { "x": 99.80000305175781, "y": 69.5250015258789 }, { "x": 94.50000381469727, "y": 75.12500190734863 }, { "x": 89.20000457763672, "y": 80.72500228881836 }, { "x": 83.90000534057617, "y": 86.32500267028809 }, { "x": 78.60000610351562, "y": 91.92500305175781 }, { "x": 53.99999656677268, "y": 137.07143592834473 }, { "x": 36.28573377699955, "y": 171.9285831451416 }, { "x": 17.42858775910773, "y": 218.21428871154785 }, { "x": 6.571441232589643, "y": 253.07143592834473 }, { "x": 3.9000003814697264, "y": 281.4212522888184 }, { "x": 4.400000762939453, "y": 304.12250457763673 }, { "x": 4.900001144409179, "y": 326.8237568664551 }, { "x": 5.400001525878906, "y": 349.52500915527344 }, { "x": 8.285735557191495, "y": 374.21429443359375 }, { "x": 14.571440723963374, "y": 397.64288330078125 }, { "x": 22.800004959106445, "y": 422.72501373291016 }, { "x": 32.857145127795846, "y": 450.7857303619385 }, { "x": 60.8571433476039, "y": 441.64287757873535 }, { "x": 88.85714156741196, "y": 433.0714359283447 }, { "x": 84.28573072524193, "y": 382.21429443359375 }, { "x": 80.28573097955507, "y": 341.0714359283447 }, { "x": 80.85714207603823, "y": 319.357141494751 }, { "x": 75.71428961980885, "y": 303.357141494751 }, { "x": 89.4285831814713, "y": 285.64287757873535 }, { "x": 89.99999427795446, "y": 270.21428871154785 }, { "x": 104.85714055015941, "y": 234.78573036193848 }, { "x": 111.60000610351562, "y": 169.52500343322754 }, { "x": 117.99999249776252, "y": 131.35714149475098 }];
+
+  var regions = {
+    main: {
+      id: "main", label: "Main Body",
+      textureImg: null, objectUrl: null, textureFileName: null,
+      rotationDeg: 0, repeatCount: 3,
+      getPoints: function () { return null; }
+    },
+    rCollar: {
+      id: "rCollar", label: "R Collar",
+      textureImg: null, objectUrl: null, textureFileName: null,
+      rotationDeg: 0, repeatCount: 3,
+      getPoints: function () { return colorMaskPoints; }
+    },
+    lCollar: {
+      id: "lCollar", label: "L Collar",
+      textureImg: null, objectUrl: null, textureFileName: null,
+      rotationDeg: 0, repeatCount: 3,
+      getPoints: function () { return colorMask2Points; }
+    },
+    rSleeve: {
+      id: "rSleeve", label: "R Sleeve",
+      textureImg: null, objectUrl: null, textureFileName: null,
+      rotationDeg: 0, repeatCount: 3,
+      getPoints: function () { return colorMask3Points; }
+    },
+    lSleeve: {
+      id: "lSleeve", label: "L Sleeve",
+      textureImg: null, objectUrl: null, textureFileName: null,
+      rotationDeg: 0, repeatCount: 3,
+      getPoints: function () { return colorMask4Points; }
+    }
+  };
+
+  var activeRegionId = "main";
+
+  function getActiveRegion() {
+    return regions[activeRegionId];
   }
 
-  var colorMask3Points = [{ "x": 363.8000030517578, "y": 105.52500343322754 }, { "x": 378.59999084472656, "y": 70.32499885559082 }, { "x": 405.8000030517578, "y": 84.72500038146973 }, { "x": 476.6000213623047, "y": 258.7249984741211 }, { "x": 480, "y": 349.125 }, { "x": 463.80003356933594, "y": 439.12501525878906 }, { "x": 403.40000915527344, "y": 430.3249969482422 }, { "x": 371.00001525878906, "y": 222.7250099182129 }];
-
-  function drawColorMask3() {
-    outputCtx.beginPath();
-    outputCtx.moveTo(colorMask3Points[0].x, colorMask3Points[0].y);
-    for (var i = 1; i < colorMask3Points.length; i++) {
-      outputCtx.lineTo(colorMask3Points[i].x, colorMask3Points[i].y);
-    }
-    outputCtx.closePath();
-    outputCtx.fillStyle = "rgba(255, 140, 0, 0.5)";
-    outputCtx.fill();
-
-    outputCtx.globalCompositeOperation = "destination-in";
-    outputCtx.drawImage(baseImage, 0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
-    outputCtx.globalCompositeOperation = "source-over";
-  }
-
-  var colorMask4Points = [{ "x": 118.60000610351562, "y": 106.32500648498535 }, { "x": 99.80000305175781, "y": 69.5250015258789 }, { "x": 78.60000610351562, "y": 91.92500305175781 }, { "x": 3.4, "y": 258.72 }, { "x": 5.400001525878906, "y": 349.52500915527344 }, { "x": 28.600006103515625, "y": 447.12501525878906 }, { "x": 90.60000610351562, "y": 430.7250061035156 }, { "x": 104.60000610351562, "y": 232.72500038146973 }]
-
-  function drawColorMask4() {
-    outputCtx.beginPath();
-    outputCtx.moveTo(colorMask4Points[0].x, colorMask4Points[0].y);
-    for (var i = 1; i < colorMask4Points.length; i++) {
-      outputCtx.lineTo(colorMask4Points[i].x, colorMask4Points[i].y);
-    }
-    outputCtx.closePath();
-    outputCtx.fillStyle = "rgba(255, 140, 0, 0.5)";
-    outputCtx.fill();
-
-    outputCtx.globalCompositeOperation = "destination-in";
-    outputCtx.drawImage(baseImage, 0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
-    outputCtx.globalCompositeOperation = "source-over";
+  function anyRegionHasTexture() {
+    return !!(
+      regions.main.textureImg || regions.rCollar.textureImg ||
+      regions.lCollar.textureImg || regions.rSleeve.textureImg ||
+      regions.lSleeve.textureImg
+    );
   }
 
   function renderAll() {
-    if (currentTextureImg) {
-      compositeTexture(currentTextureImg);
+    if (regions.main.textureImg) {
+      paintTexturedRegion(regions.main);
     } else {
       drawShirtBase();
     }
     drawOverlay();
-    drawColorMask();
-    drawColorMask2();
-    drawColorMask3();
-    drawColorMask4();
-    downloadBtn.disabled = !(currentTextureImg || overlayImg);
+    if (regions.rCollar.textureImg) {
+      paintTexturedRegion(regions.rCollar);
+    }
+    if (regions.lCollar.textureImg) {
+      paintTexturedRegion(regions.lCollar);
+    }
+    if (regions.rSleeve.textureImg) {
+      paintTexturedRegion(regions.rSleeve);
+    }
+    if (regions.lSleeve.textureImg) {
+      paintTexturedRegion(regions.lSleeve);
+    }
+    downloadBtn.disabled = !(anyRegionHasTexture() || overlayImg);
     updateDebugLog();
   }
 
@@ -433,19 +436,23 @@
       return;
     }
 
-    if (currentObjectUrl) {
-      URL.revokeObjectURL(currentObjectUrl);
-      currentObjectUrl = null;
+    var region = getActiveRegion();
+
+    if (region.objectUrl) {
+      URL.revokeObjectURL(region.objectUrl);
+      region.objectUrl = null;
     }
 
     var objectUrl = URL.createObjectURL(file);
-    currentObjectUrl = objectUrl;
+    region.objectUrl = objectUrl;
 
     var img = new Image();
     img.onload = function () {
       try {
         clearError();
-        currentTextureImg = img;
+        region.textureImg = img;
+        region.textureFileName = file.name;
+        updateRegionControlsUI();
         renderAll();
       } catch (err) {
         showError("Could not apply that texture: " + err.message);
@@ -509,12 +516,13 @@
   }
 
   function handlePatternConfigChange() {
-    patternConfig.rotationDeg = Number(rotationInput.value);
-    patternConfig.repeatCount = Number(repeatCountInput.value);
-    rotationValueEl.textContent = patternConfig.rotationDeg + "°";
-    repeatCountValueEl.textContent = patternConfig.repeatCount + "×";
+    var region = getActiveRegion();
+    region.rotationDeg = Number(rotationInput.value);
+    region.repeatCount = Number(repeatCountInput.value);
+    rotationValueEl.textContent = region.rotationDeg + "°";
+    repeatCountValueEl.textContent = region.repeatCount + "×";
 
-    if (currentTextureImg) {
+    if (region.textureImg) {
       try {
         clearError();
         renderAll();
@@ -522,6 +530,20 @@
         showError("Could not apply that texture: " + err.message);
       }
     }
+  }
+
+  function updateRegionControlsUI() {
+    var region = getActiveRegion();
+    rotationInput.value = String(region.rotationDeg);
+    rotationValueEl.textContent = region.rotationDeg + "°";
+    repeatCountInput.value = String(region.repeatCount);
+    repeatCountValueEl.textContent = region.repeatCount + "×";
+    regionTextureStatusEl.textContent = "Texture: " + (region.textureFileName || "none");
+  }
+
+  function handleRegionSelectChange() {
+    activeRegionId = regionSelectEl.value;
+    updateRegionControlsUI();
   }
 
   function positionHandles() {
@@ -766,8 +788,15 @@
     lines.push("colorMask2Points: " + JSON.stringify(colorMask2Points));
     lines.push("colorMask3Points: " + JSON.stringify(colorMask3Points));
     lines.push("colorMask4Points: " + JSON.stringify(colorMask4Points));
-    lines.push("patternConfig: " + JSON.stringify(patternConfig));
-    lines.push("hasTexture: " + !!currentTextureImg + ", hasOverlay: " + !!overlayImg);
+    lines.push("activeRegion: " + activeRegionId);
+    ["main", "rCollar", "lCollar", "rSleeve", "lSleeve"].forEach(function (id) {
+      var r = regions[id];
+      lines.push(
+        r.label + ": rotationDeg=" + r.rotationDeg + " repeatCount=" + r.repeatCount +
+        " hasTexture=" + !!r.textureImg + " file=" + (r.textureFileName || "none")
+      );
+    });
+    lines.push("hasOverlay: " + !!overlayImg);
     debugLogEl.textContent = lines.join("\n");
   }
 
@@ -892,6 +921,8 @@
     repeatCountInput = document.getElementById("repeat-count-input");
     repeatCountValueEl = document.getElementById("repeat-count-value");
     overlayInput = document.getElementById("overlay-input");
+    regionSelectEl = document.getElementById("region-select");
+    regionTextureStatusEl = document.getElementById("region-texture-status");
     cornerReadoutEl = document.getElementById("corner-readout");
     cornerHandleEls = Array.prototype.slice.call(
       document.querySelectorAll(".corner-handle")
@@ -919,6 +950,7 @@
     rotationInput.addEventListener("input", handlePatternConfigChange);
     repeatCountInput.addEventListener("input", handlePatternConfigChange);
     overlayInput.addEventListener("change", handleOverlayFileChange);
+    regionSelectEl.addEventListener("change", handleRegionSelectChange);
     cornerHandleEls.forEach(function (el) {
       el.addEventListener("pointerdown", handleHandlePointerDown);
     });
@@ -942,6 +974,7 @@
     updateMask3Readout();
     rebuildMask4Handles();
     updateMask4Readout();
+    updateRegionControlsUI();
 
     loadBaseImageAndBuildLightingMap().catch(function (err) {
       showError(err.message);
