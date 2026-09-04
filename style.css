@@ -111,7 +111,26 @@ h1 {
   cursor: grabbing;
 }
 
-#mask-readout {
+.mask2-handle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: #ff69b4;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 0 1px #c94f8f;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+  opacity: 0.5;
+}
+
+.mask2-handle:active {
+  cursor: grabbing;
+}
+
+#mask-readout,
+#mask2-readout {
   font-size: 0.85rem;
   color: #57606a;
   margin: 0 0 12px;

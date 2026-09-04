@@ -38,6 +38,8 @@
   var cornerHandleEls = null;
   var maskReadoutEl = null;
   var maskHandleEls = null;
+  var mask2ReadoutEl = null;
+  var mask2HandleEls = null;
   var debugLogEl = null;
   var errorMessageEl = null;
   var downloadBtn = null;
@@ -338,6 +340,22 @@
     outputCtx.globalCompositeOperation = "source-over";
   }
 
+  var colorMask2Points = [{ "x": 217.5, "y": 78.58854675292969 }, { "x": 195.83334350585938, "y": 39.58854675292969 }, { "x": 192.1666717529297, "y": 8.921875 }, { "x": 183.83334350585938, "y": 22.255203247070312 }, { "x": 177.1666717529297, "y": 28.255203247070312 }, { "x": 176.5, "y": 49.921875 }, { "x": 188.83334350585938, "y": 104.25520324707031 }, { "x": 201.17, "y": 91.92 }]
+  function drawColorMask2() {
+    outputCtx.beginPath();
+    outputCtx.moveTo(colorMask2Points[0].x, colorMask2Points[0].y);
+    for (var i = 1; i < colorMask2Points.length; i++) {
+      outputCtx.lineTo(colorMask2Points[i].x, colorMask2Points[i].y);
+    }
+    outputCtx.closePath();
+    outputCtx.fillStyle = "rgba(255, 182, 193, 0.5)";
+    outputCtx.fill();
+
+    outputCtx.globalCompositeOperation = "destination-in";
+    outputCtx.drawImage(baseImage, 0, 0, SHIRT_WIDTH, SHIRT_HEIGHT);
+    outputCtx.globalCompositeOperation = "source-over";
+  }
+
   function renderAll() {
     if (currentTextureImg) {
       compositeTexture(currentTextureImg);
@@ -346,6 +364,7 @@
     }
     drawOverlay();
     drawColorMask();
+    drawColorMask2();
     downloadBtn.disabled = !(currentTextureImg || overlayImg);
     updateDebugLog();
   }
@@ -498,6 +517,24 @@
     maskReadoutEl.textContent = "Mask: " + parts.join(" ");
   }
 
+  function positionMask2Handles() {
+    for (var i = 0; i < mask2HandleEls.length; i++) {
+      var pt = colorMask2Points[i];
+      mask2HandleEls[i].style.left = (pt.x / SHIRT_WIDTH) * 100 + "%";
+      mask2HandleEls[i].style.top = (pt.y / SHIRT_HEIGHT) * 100 + "%";
+    }
+  }
+
+  function updateMask2Readout() {
+    var parts = [];
+    for (var i = 0; i < colorMask2Points.length; i++) {
+      parts.push(
+        "(" + Math.round(colorMask2Points[i].x) + "," + Math.round(colorMask2Points[i].y) + ")"
+      );
+    }
+    mask2ReadoutEl.textContent = "Mask 2: " + parts.join(" ");
+  }
+
   function updateDebugLog() {
     if (!debugLogEl) {
       return;
@@ -507,6 +544,7 @@
     lines.push("canvas: " + SHIRT_WIDTH + "x" + SHIRT_HEIGHT);
     lines.push("quadPoints: " + JSON.stringify(quadPoints));
     lines.push("colorMaskPoints: " + JSON.stringify(colorMaskPoints));
+    lines.push("colorMask2Points: " + JSON.stringify(colorMask2Points));
     lines.push("patternConfig: " + JSON.stringify(patternConfig));
     lines.push("hasTexture: " + !!currentTextureImg + ", hasOverlay: " + !!overlayImg);
     debugLogEl.textContent = lines.join("\n");
@@ -580,6 +618,35 @@
     event.preventDefault();
   }
 
+  function handleMask2HandlePointerDown(event) {
+    var handleEl = event.currentTarget;
+    var index = Number(handleEl.getAttribute("data-mask2-index"));
+    handleEl.setPointerCapture(event.pointerId);
+
+    function onMove(moveEvent) {
+      colorMask2Points[index] = clientToCanvasPoint(moveEvent.clientX, moveEvent.clientY);
+      positionMask2Handles();
+      updateMask2Readout();
+      try {
+        renderAll();
+      } catch (err) {
+        showError("Could not render the mask: " + err.message);
+      }
+    }
+
+    function onUp(upEvent) {
+      handleEl.releasePointerCapture(upEvent.pointerId);
+      handleEl.removeEventListener("pointermove", onMove);
+      handleEl.removeEventListener("pointerup", onUp);
+      handleEl.removeEventListener("pointercancel", onUp);
+    }
+
+    handleEl.addEventListener("pointermove", onMove);
+    handleEl.addEventListener("pointerup", onUp);
+    handleEl.addEventListener("pointercancel", onUp);
+    event.preventDefault();
+  }
+
   function handleDownload() {
     outputCanvas.toBlob(function (blob) {
       if (!blob) {
@@ -612,6 +679,10 @@
     maskHandleEls = Array.prototype.slice.call(
       document.querySelectorAll(".mask-handle")
     );
+    mask2ReadoutEl = document.getElementById("mask2-readout");
+    mask2HandleEls = Array.prototype.slice.call(
+      document.querySelectorAll(".mask2-handle")
+    );
     debugLogEl = document.getElementById("debug-log");
     errorMessageEl = document.getElementById("error-message");
     downloadBtn = document.getElementById("download-btn");
@@ -628,12 +699,17 @@
     maskHandleEls.forEach(function (el) {
       el.addEventListener("pointerdown", handleMaskHandlePointerDown);
     });
+    mask2HandleEls.forEach(function (el) {
+      el.addEventListener("pointerdown", handleMask2HandlePointerDown);
+    });
     downloadBtn.addEventListener("click", handleDownload);
 
     positionHandles();
     updateCornerReadout();
     positionMaskHandles();
     updateMaskReadout();
+    positionMask2Handles();
+    updateMask2Readout();
 
     loadBaseImageAndBuildLightingMap().catch(function (err) {
       showError(err.message);
