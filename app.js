@@ -41,6 +41,10 @@
   var mask4ReadoutEl = null;
   var mask4HandleEls = [];
   var mask4DoubleBtn = null;
+  var mask5ReadoutEl = null;
+  var mask5HandleEls = null;
+  var mask6ReadoutEl = null;
+  var mask6HandleEls = null;
   var canvasWrapEl = null;
   var debugLogEl = null;
   var errorMessageEl = null;
@@ -345,6 +349,10 @@
 
   var colorMask4Points = [{ "x": 118.60000610351562, "y": 106.32500648498535 }, { "x": 113.90000534057617, "y": 97.12500524520874 }, { "x": 109.20000457763672, "y": 87.92500400543213 }, { "x": 104.50000381469727, "y": 78.72500276565552 }, { "x": 99.80000305175781, "y": 69.5250015258789 }, { "x": 94.50000381469727, "y": 75.12500190734863 }, { "x": 89.20000457763672, "y": 80.72500228881836 }, { "x": 83.90000534057617, "y": 86.32500267028809 }, { "x": 78.60000610351562, "y": 91.92500305175781 }, { "x": 53.99999656677268, "y": 137.07143592834473 }, { "x": 36.28573377699955, "y": 171.9285831451416 }, { "x": 17.42858775910773, "y": 218.21428871154785 }, { "x": 6.571441232589643, "y": 253.07143592834473 }, { "x": 3.9000003814697264, "y": 281.4212522888184 }, { "x": 4.400000762939453, "y": 304.12250457763673 }, { "x": 4.900001144409179, "y": 326.8237568664551 }, { "x": 5.400001525878906, "y": 349.52500915527344 }, { "x": 8.285735557191495, "y": 374.21429443359375 }, { "x": 14.571440723963374, "y": 397.64288330078125 }, { "x": 22.800004959106445, "y": 422.72501373291016 }, { "x": 32.857145127795846, "y": 450.7857303619385 }, { "x": 60.8571433476039, "y": 441.64287757873535 }, { "x": 88.85714156741196, "y": 433.0714359283447 }, { "x": 84.28573072524193, "y": 382.21429443359375 }, { "x": 80.28573097955507, "y": 341.0714359283447 }, { "x": 80.85714207603823, "y": 319.357141494751 }, { "x": 75.71428961980885, "y": 303.357141494751 }, { "x": 89.4285831814713, "y": 285.64287757873535 }, { "x": 89.99999427795446, "y": 270.21428871154785 }, { "x": 104.85714055015941, "y": 234.78573036193848 }, { "x": 111.60000610351562, "y": 169.52500343322754 }, { "x": 117.99999249776252, "y": 131.35714149475098 }];
 
+  var colorMask5Points = [{ "x": 402.12904650443846, "y": 433.51846718304114 }, { "x": 421.1229960694254, "y": 433.51846718304114 }, { "x": 459.9249216093274, "y": 440.57333876885446 }, { "x": 453.68405246654595, "y": 481.2745209947003 }, { "x": 447.4431833237645, "y": 481.2745209947003 }, { "x": 444.1870776840525, "y": 476.93306155727674 }, { "x": 420.5803117961401, "y": 476.6617203424378 }, { "x": 399.41562513801176, "y": 473.1342845495312 }];
+
+  var colorMask6Points = [{ "x": 89, "y": 432.7250061035156 }, { "x": 61, "y": 439.9250183105469 }, { "x": 31, "y": 450.32501220703125 }, { "x": 45, "y": 486.3249969482422 }, { "x": 52.19999694824219, "y": 481.5249938964844 }, { "x": 60.600006103515625, "y": 481.5249938964844 }, { "x": 83.80000305175781, "y": 476.3249969482422 }, { "x": 97, "y": 472.3249969482422 }];
+
   var regions = {
     main: {
       id: "main", label: "Main Body",
@@ -375,6 +383,18 @@
       textureImg: null, objectUrl: null, textureFileName: null,
       rotationDeg: 0, repeatCount: 3,
       getPoints: function () { return colorMask4Points; }
+    },
+    rCuff: {
+      id: "rCuff", label: "R Cuff",
+      textureImg: null, objectUrl: null, textureFileName: null,
+      rotationDeg: 0, repeatCount: 3,
+      getPoints: function () { return colorMask5Points; }
+    },
+    lCuff: {
+      id: "lCuff", label: "L Cuff",
+      textureImg: null, objectUrl: null, textureFileName: null,
+      rotationDeg: 0, repeatCount: 3,
+      getPoints: function () { return colorMask6Points; }
     }
   };
 
@@ -388,7 +408,8 @@
     return !!(
       regions.main.textureImg || regions.rCollar.textureImg ||
       regions.lCollar.textureImg || regions.rSleeve.textureImg ||
-      regions.lSleeve.textureImg
+      regions.lSleeve.textureImg || regions.rCuff.textureImg ||
+      regions.lCuff.textureImg
     );
   }
 
@@ -410,6 +431,12 @@
     }
     if (regions.lSleeve.textureImg) {
       paintTexturedRegion(regions.lSleeve);
+    }
+    if (regions.rCuff.textureImg) {
+      paintTexturedRegion(regions.rCuff);
+    }
+    if (regions.lCuff.textureImg) {
+      paintTexturedRegion(regions.lCuff);
     }
     downloadBtn.disabled = !(anyRegionHasTexture() || overlayImg);
     updateDebugLog();
@@ -600,6 +627,100 @@
     mask2ReadoutEl.textContent = "Mask 2: " + parts.join(" ");
   }
 
+  function positionMask5Handles() {
+    for (var i = 0; i < mask5HandleEls.length; i++) {
+      var pt = colorMask5Points[i];
+      mask5HandleEls[i].style.left = (pt.x / SHIRT_WIDTH) * 100 + "%";
+      mask5HandleEls[i].style.top = (pt.y / SHIRT_HEIGHT) * 100 + "%";
+    }
+  }
+
+  function updateMask5Readout() {
+    var parts = [];
+    for (var i = 0; i < colorMask5Points.length; i++) {
+      parts.push(
+        "(" + Math.round(colorMask5Points[i].x) + "," + Math.round(colorMask5Points[i].y) + ")"
+      );
+    }
+    mask5ReadoutEl.textContent = "Mask 5: " + parts.join(" ");
+  }
+
+  function handleMask5HandlePointerDown(event) {
+    var handleEl = event.currentTarget;
+    var index = Number(handleEl.getAttribute("data-mask5-index"));
+    handleEl.setPointerCapture(event.pointerId);
+
+    function onMove(moveEvent) {
+      colorMask5Points[index] = clientToCanvasPoint(moveEvent.clientX, moveEvent.clientY);
+      positionMask5Handles();
+      updateMask5Readout();
+      try {
+        renderAll();
+      } catch (err) {
+        showError("Could not render the mask: " + err.message);
+      }
+    }
+
+    function onUp(upEvent) {
+      handleEl.releasePointerCapture(upEvent.pointerId);
+      handleEl.removeEventListener("pointermove", onMove);
+      handleEl.removeEventListener("pointerup", onUp);
+      handleEl.removeEventListener("pointercancel", onUp);
+    }
+
+    handleEl.addEventListener("pointermove", onMove);
+    handleEl.addEventListener("pointerup", onUp);
+    handleEl.addEventListener("pointercancel", onUp);
+    event.preventDefault();
+  }
+
+  function positionMask6Handles() {
+    for (var i = 0; i < mask6HandleEls.length; i++) {
+      var pt = colorMask6Points[i];
+      mask6HandleEls[i].style.left = (pt.x / SHIRT_WIDTH) * 100 + "%";
+      mask6HandleEls[i].style.top = (pt.y / SHIRT_HEIGHT) * 100 + "%";
+    }
+  }
+
+  function updateMask6Readout() {
+    var parts = [];
+    for (var i = 0; i < colorMask6Points.length; i++) {
+      parts.push(
+        "(" + Math.round(colorMask6Points[i].x) + "," + Math.round(colorMask6Points[i].y) + ")"
+      );
+    }
+    mask6ReadoutEl.textContent = "Mask 6: " + parts.join(" ");
+  }
+
+  function handleMask6HandlePointerDown(event) {
+    var handleEl = event.currentTarget;
+    var index = Number(handleEl.getAttribute("data-mask6-index"));
+    handleEl.setPointerCapture(event.pointerId);
+
+    function onMove(moveEvent) {
+      colorMask6Points[index] = clientToCanvasPoint(moveEvent.clientX, moveEvent.clientY);
+      positionMask6Handles();
+      updateMask6Readout();
+      try {
+        renderAll();
+      } catch (err) {
+        showError("Could not render the mask: " + err.message);
+      }
+    }
+
+    function onUp(upEvent) {
+      handleEl.releasePointerCapture(upEvent.pointerId);
+      handleEl.removeEventListener("pointermove", onMove);
+      handleEl.removeEventListener("pointerup", onUp);
+      handleEl.removeEventListener("pointercancel", onUp);
+    }
+
+    handleEl.addEventListener("pointermove", onMove);
+    handleEl.addEventListener("pointerup", onUp);
+    handleEl.addEventListener("pointercancel", onUp);
+    event.preventDefault();
+  }
+
   function positionMask3Handles() {
     for (var i = 0; i < mask3HandleEls.length; i++) {
       var pt = colorMask3Points[i];
@@ -788,8 +909,10 @@
     lines.push("colorMask2Points: " + JSON.stringify(colorMask2Points));
     lines.push("colorMask3Points: " + JSON.stringify(colorMask3Points));
     lines.push("colorMask4Points: " + JSON.stringify(colorMask4Points));
+    lines.push("colorMask5Points: " + JSON.stringify(colorMask5Points));
+    lines.push("colorMask6Points: " + JSON.stringify(colorMask6Points));
     lines.push("activeRegion: " + activeRegionId);
-    ["main", "rCollar", "lCollar", "rSleeve", "lSleeve"].forEach(function (id) {
+    ["main", "rCollar", "lCollar", "rSleeve", "lSleeve", "rCuff", "lCuff"].forEach(function (id) {
       var r = regions[id];
       lines.push(
         r.label + ": rotationDeg=" + r.rotationDeg + " repeatCount=" + r.repeatCount +
@@ -939,6 +1062,14 @@
     mask3DoubleBtn = document.getElementById("mask3-double-btn");
     mask4ReadoutEl = document.getElementById("mask4-readout");
     mask4DoubleBtn = document.getElementById("mask4-double-btn");
+    mask5ReadoutEl = document.getElementById("mask5-readout");
+    mask5HandleEls = Array.prototype.slice.call(
+      document.querySelectorAll(".mask5-handle")
+    );
+    mask6ReadoutEl = document.getElementById("mask6-readout");
+    mask6HandleEls = Array.prototype.slice.call(
+      document.querySelectorAll(".mask6-handle")
+    );
     canvasWrapEl = document.querySelector(".canvas-wrap");
     debugLogEl = document.getElementById("debug-log");
     errorMessageEl = document.getElementById("error-message");
@@ -960,6 +1091,12 @@
     mask2HandleEls.forEach(function (el) {
       el.addEventListener("pointerdown", handleMask2HandlePointerDown);
     });
+    mask5HandleEls.forEach(function (el) {
+      el.addEventListener("pointerdown", handleMask5HandlePointerDown);
+    });
+    mask6HandleEls.forEach(function (el) {
+      el.addEventListener("pointerdown", handleMask6HandlePointerDown);
+    });
     mask3DoubleBtn.addEventListener("click", subdivideMask3Points);
     mask4DoubleBtn.addEventListener("click", subdivideMask4Points);
     downloadBtn.addEventListener("click", handleDownload);
@@ -970,6 +1107,10 @@
     updateMaskReadout();
     positionMask2Handles();
     updateMask2Readout();
+    positionMask5Handles();
+    updateMask5Readout();
+    positionMask6Handles();
+    updateMask6Readout();
     rebuildMask3Handles();
     updateMask3Readout();
     rebuildMask4Handles();

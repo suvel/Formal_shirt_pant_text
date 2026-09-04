@@ -135,8 +135,8 @@ h1 {
 
 .mask3-handle {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 2px;
+  height: 2px;
   border-radius: 2px;
   background: #ff8c00;
   border: 1px solid #ffffff;
@@ -144,6 +144,7 @@ h1 {
   transform: translate(-50%, -50%);
   cursor: grab;
   touch-action: none;
+  opacity: 0.5;
 }
 
 .mask3-handle:active {
@@ -152,8 +153,8 @@ h1 {
 
 .mask4-handle {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 2px;
+  height: 2px;
   border-radius: 2px;
   background: #ffa500;
   border: 1px solid #ffffff;
@@ -161,9 +162,46 @@ h1 {
   transform: translate(-50%, -50%);
   cursor: grab;
   touch-action: none;
+  opacity: 0.5;
 }
 
 .mask4-handle:active {
+  cursor: grabbing;
+}
+
+.mask5-handle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: #ffd700;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 0 1px #b8960b;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+  opacity: 0.5;
+}
+
+.mask5-handle:active {
+  cursor: grabbing;
+}
+
+.mask6-handle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: #ffec8b;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 0 1px #c9a227;
+  transform: translate(-50%, -50%);
+  opacity: 0.5;
+  cursor: grab;
+  touch-action: none;
+}
+
+.mask6-handle:active {
   cursor: grabbing;
 }
 
@@ -171,6 +209,8 @@ h1 {
 #mask2-readout,
 #mask3-readout,
 #mask4-readout,
+#mask5-readout,
+#mask6-readout,
 #region-texture-status {
   font-size: 0.85rem;
   color: #57606a;
