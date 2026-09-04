@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shirt Texture Mockup</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1788540304">
 </head>
 <body>
   <main>
@@ -20,19 +20,45 @@
 
       <label for="repeat-count-input">Pattern repeats across shirt (<span id="repeat-count-value">3×</span>)</label>
       <input type="range" id="repeat-count-input" min="1" max="10" step="1" value="3">
+
+      <label for="overlay-input">Overlay design image</label>
+      <input type="file" id="overlay-input" accept="image/*">
     </div>
 
     <p id="error-message" role="alert" hidden></p>
+
+    <p class="instructions">Drag the 4 corner handles on the preview to position and warp the overlay design.</p>
+    <p id="corner-readout"></p>
 
     <div class="canvas-wrap">
       <canvas id="preview-canvas" width="480" height="520">
         Your browser does not support the canvas element.
       </canvas>
+      <div class="corner-handle" data-index="0"></div>
+      <div class="corner-handle" data-index="1"></div>
+      <div class="corner-handle" data-index="2"></div>
+      <div class="corner-handle" data-index="3"></div>
+      <div class="mask-handle" data-mask-index="0"></div>
+      <div class="mask-handle" data-mask-index="1"></div>
+      <div class="mask-handle" data-mask-index="2"></div>
+      <div class="mask-handle" data-mask-index="3"></div>
+      <div class="mask-handle" data-mask-index="4"></div>
+      <div class="mask-handle" data-mask-index="5"></div>
+      <div class="mask-handle" data-mask-index="6"></div>
+      <div class="mask-handle" data-mask-index="7"></div>
     </div>
 
+    <p class="instructions">Drag the 4 small pink handles to skew and tweak the pink mask rectangle.</p>
+    <p id="mask-readout"></p>
+
     <button id="download-btn" disabled>Download PNG</button>
+
+    <section id="debug-section">
+      <h2>Debug</h2>
+      <pre id="debug-log"></pre>
+    </section>
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=1788540304"></script>
 </body>
 </html>
