@@ -49,6 +49,7 @@
   var debugLogEl = null;
   var errorMessageEl = null;
   var downloadBtn = null;
+  var toggleDebugBtn = null;
 
   function showError(message) {
     errorMessageEl.textContent = message;
@@ -1037,6 +1038,11 @@
     }, "image/png");
   }
 
+  function handleToggleDebugClick() {
+    var hidden = document.body.classList.toggle("debug-hidden");
+    toggleDebugBtn.textContent = hidden ? "Show Debug Tools" : "Hide Debug Tools";
+  }
+
   function init() {
     textureInput = document.getElementById("texture-input");
     rotationInput = document.getElementById("rotation-input");
@@ -1074,6 +1080,7 @@
     debugLogEl = document.getElementById("debug-log");
     errorMessageEl = document.getElementById("error-message");
     downloadBtn = document.getElementById("download-btn");
+    toggleDebugBtn = document.getElementById("toggle-debug-btn");
     outputCanvas = document.getElementById("preview-canvas");
     outputCtx = outputCanvas.getContext("2d");
 
@@ -1100,6 +1107,7 @@
     mask3DoubleBtn.addEventListener("click", subdivideMask3Points);
     mask4DoubleBtn.addEventListener("click", subdivideMask4Points);
     downloadBtn.addEventListener("click", handleDownload);
+    toggleDebugBtn.addEventListener("click", handleToggleDebugClick);
 
     positionHandles();
     updateCornerReadout();

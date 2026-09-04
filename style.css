@@ -265,3 +265,27 @@ button:disabled {
   background: #a9b1bb;
   cursor: not-allowed;
 }
+
+#toggle-debug-btn {
+  margin-bottom: 12px;
+}
+
+body.debug-hidden .corner-handle,
+body.debug-hidden .mask-handle,
+body.debug-hidden .mask2-handle,
+body.debug-hidden .mask3-handle,
+body.debug-hidden .mask4-handle,
+body.debug-hidden .mask5-handle,
+body.debug-hidden .mask6-handle,
+body.debug-hidden .instructions,
+body.debug-hidden #mask-readout,
+body.debug-hidden #mask2-readout,
+body.debug-hidden #mask3-readout,
+body.debug-hidden #mask4-readout,
+body.debug-hidden #mask5-readout,
+body.debug-hidden #mask6-readout,
+body.debug-hidden #mask3-double-btn,
+body.debug-hidden #mask4-double-btn,
+body.debug-hidden #debug-section {
+  display: none;
+}
