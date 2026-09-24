@@ -7,6 +7,8 @@ lighting, then masked to that part's shape. Add an optional overlay design
 (e.g. a logo) and warp it into place with draggable corner handles, then
 download the finished mockup as a transparent PNG.
 
+**Live demo:** <https://suvel.github.io/Formal_shirt_pant_text/>
+
 ## Getting Started
 
 **Prerequisites**
@@ -59,9 +61,18 @@ shirt_maker/
 ├── app.js                # all application logic (region compositing, masking, drag handling)
 ├── style.css             # layout and styling
 ├── assert/plain_white.png  # base shirt image (480×520, transparent bg, pre-shaded)
+├── .github/workflows/pages.yml  # GitHub Pages deploy workflow
 ├── PROGRESS.md           # internal dev log and verification checklist
 └── README.md             # this file
 ```
+
+## Deployment
+
+The app is hosted on GitHub Pages. Every push to `master` triggers
+`.github/workflows/pages.yml`, which publishes `index.html`, `app.js`,
+`style.css`, and `assert/` (dev-only files like `PROGRESS.md` are not
+published). One-time setup: in the repo's **Settings → Pages**, set
+**Source** to **GitHub Actions**.
 
 ## Decision history
 
